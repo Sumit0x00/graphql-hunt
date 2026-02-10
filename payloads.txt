@@ -1,5 +1,4 @@
 # Common GraphQL Endpoints
-/graphql
 /graphiql
 /v1/graphql
 /v2/graphql
