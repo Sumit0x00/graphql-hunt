@@ -1,2 +1,12 @@
-.venv
-__pycache__
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+
+# Local dump files (keep your VAPT results private!)
+*.json
+payloads.txt
