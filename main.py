@@ -75,8 +75,7 @@ def dump_introspection(url, filename="schema_dump.json"):
             return True, intdata
     except Exception as e:
         print(f"[-] Dump failed: {e}")
-    return False, None  # Return None for intdata if it fails
-
+    return False, None  
 
 def get_mutations(introspection_data):
     try:
@@ -124,15 +123,15 @@ if not target_url.endswith(tuple(f.COMMON_PATHS)):
     if not found_url:
         print(f"{Fore.RED}[-] Could not find a GraphQL endpoint. Try providing the path manually.")
         sys.exit()
-    target_url = found_url  # Fixed variable name from 'target' to 'target_url'
+    target_url = found_url  
 
 if is_introspection_enabled(target_url):
     print(f"[!] Introspection is ENABLED! {Fore.RED}[Information Disclosure]{Style.RESET_ALL}\n")
     print(f"{Fore.YELLOW}Starting Dump....{Style.RESET_ALL}")
-    success, introspection_data = dump_introspection(target_url)  # Capture both return values
+    success, introspection_data = dump_introspection(target_url)  
     if success and introspection_data:
         print("Mutation Identified---")
-        get_mutations(introspection_data)  # Pass the introspection_data
+        get_mutations(introspection_data)  
     else:
         print(f"{Fore.RED}[-] Failed to retrieve introspection data.")
 else:
