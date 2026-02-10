@@ -14,8 +14,8 @@ A lightweight, modular Python suite designed for Vulnerability Assessment and Pe
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YourUsername/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/Sumit0x00/graphql-hunt
+cd graphql-hunt
 ```
 
 2. Set up a Virtual Environment (Recommended):
