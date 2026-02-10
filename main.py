@@ -1,6 +1,7 @@
 import json 
 import requests
 import argparse
+from colorama import Fore, Style, init
 
 def is_introspection_enabled(url):
     probe_query = {"query": "{ __schema { queryType { name } } }"}
@@ -82,7 +83,8 @@ target_url = args.url
 print(f"Targeting: {target_url}")
 
 if is_introspection_enabled(target_url):
-    print("[!] Introspection is ENABLED! Starting dump...")
+    print(f"[!] Introspection is ENABLED! {Fore.RED}[Information Disclosure]{Style.RESET_ALL}\n")
+    print(f"{Fore.YELLOW}Starting Dump....{Style.RESET_ALL}")
     dump_introspection(target_url)
 else:
     print("[-] Introspection is disabled or the endpoint is protected.")
