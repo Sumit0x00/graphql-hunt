@@ -9,9 +9,7 @@ def is_introspection_enabled(url):
         response = requests.post(url,timeout=10,json=probe_query)
         if response.status_code == 200:
             data = response.json()
-            print(data)
             if data.get("data",{}).get("__schema"):
-                print("enabled")
                 return True
             
         return False
@@ -75,3 +73,16 @@ def dump_introspection(url , filename="schema_dump.json"):
         print(f"[-] Dump failed: {e}")
     return False
 
+parser = argparse.ArgumentParser(description="GraphQL Introspection Detector")
+parser.add_argument("-u", "--url", help="The target GraphQL URL", required=True)
+
+args = parser.parse_args()
+
+target_url = args.url
+print(f"Targeting: {target_url}")
+
+if is_introspection_enabled(target_url):
+    print("[!] Introspection is ENABLED! Starting dump...")
+    dump_introspection(target_url)
+else:
+    print("[-] Introspection is disabled or the endpoint is protected.")
