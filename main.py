@@ -284,7 +284,7 @@ def has_graphql_path(url):
 
 if not has_graphql_path(target_url):
     print(f"{Fore.YELLOW}[*] No specific endpoint detected, starting fuzzing...{Style.RESET_ALL}")
-    found_url = f.find_graphql_endpoint(target_url)
+    found_url = f.find_graphql_endpoint(target_url, threads=20) 
     if not found_url:
         print(f"{Fore.RED}[-] Could not find a GraphQL endpoint. Try providing the path manually.{Style.RESET_ALL}")
         sys.exit(1)
