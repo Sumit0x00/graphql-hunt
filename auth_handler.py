@@ -29,7 +29,6 @@ class AuthHandler:
             print(f"{Fore.CYAN}[*] Using Bearer Token authentication")
         
         elif self.auth_type == "cookie" and self.cookies:
-            # Handle cookie string format: "session=abc123; token=xyz789"
             if isinstance(self.cookies, str):
                 self.cookie_dict = self._parse_cookie_string(self.cookies)
             elif isinstance(self.cookies, dict):
@@ -59,7 +58,6 @@ class AuthHandler:
         if base_headers is None:
             base_headers = {}
         
-        # Merge base headers with auth headers
         merged_headers = {**base_headers, **self.headers}
         return merged_headers
     
@@ -96,7 +94,6 @@ class AuthHandler:
                 timeout=10
             )
             
-            # Check status codes
             if response.status_code == 401:
                 return False, f"{Fore.RED}[✗] Invalid or expired credentials (401 Unauthorized){Style.RESET_ALL}"
             

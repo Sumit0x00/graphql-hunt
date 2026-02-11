@@ -174,7 +174,6 @@ def get_subscriptions(introspection_data):
                 if subscription_list:
                     print(f"{Fore.BLUE}{Style.BRIGHT}\n[!] DISCOVERED {len(subscription_list)} SUBSCRIPTIONS:")
                     for s in subscription_list:
-                        # Flag real-time data subscriptions
                         if any(word in s.lower() for word in ['message', 'notification', 'update', 'event', 'stream']):
                             print(f"  {Fore.CYAN}-> {s} (REAL-TIME DATA)")
                         else:
@@ -281,7 +280,6 @@ auth_handler = create_auth_handler(
 def has_graphql_path(url):
     from urllib.parse import urlparse
     path = urlparse(url).path
-    # Check if path is not just "/" or empty
     return len(path) > 1 and path != "/"
 
 if not has_graphql_path(target_url):
@@ -311,7 +309,6 @@ if is_introspection_enabled(target_url, auth_handler):
     success, introspection_data = dump_introspection(target_url, auth_handler, output_file)
     
     if success and introspection_data:
-        # Comprehensive schema analysis
         schema_info = analyze_schema(introspection_data)
     else:
         print(f"{Fore.RED}[-] Failed to retrieve introspection data.{Style.RESET_ALL}")
