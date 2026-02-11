@@ -6,7 +6,7 @@ import fuzzer as f
 import sys
 from auth_handler import create_auth_handler
 
-# Initialize colorama
+
 init(autoreset=True)
 
 def is_introspection_enabled(url, auth_handler):
@@ -116,6 +116,77 @@ def dump_introspection(url, auth_handler, filename="schema_dump.json"):
     
     return False, None
 
+def get_queries(introspection_data):
+    """Extract all Query operations from GraphQL schema"""
+    try:
+        schema = introspection_data.get('data', {}).get('__schema', {})
+        query_type_info = schema.get('queryType')
+
+        if not query_type_info:
+            print(f"{Fore.YELLOW}[*] No queries found in the schema.{Style.RESET_ALL}")
+            return []
+
+        query_name = query_type_info.get('name')
+        types = schema.get('types', [])
+
+        for gql_type in types:
+            if gql_type.get('name') == query_name:
+                fields = gql_type.get('fields', [])
+                
+                query_list = [f['name'] for f in fields]
+                
+                if query_list:
+                    print(f"{Fore.CYAN}{Style.BRIGHT}\n[!] DISCOVERED {len(query_list)} QUERIES:")
+                    for q in query_list:
+                        # Flag potentially sensitive queries
+                        if any(word in q.lower() for word in ['user', 'admin', 'password', 'token', 'secret', 'key', 'private']):
+                            print(f"  {Fore.YELLOW}-> {q} (POTENTIALLY SENSITIVE)")
+                        else:
+                            print(f"  {Fore.WHITE}-> {q}")
+                    return query_list
+        
+        return []
+
+    except Exception as e:
+        print(f"{Fore.RED}[-] Error parsing queries: {e}{Style.RESET_ALL}")
+        return []
+
+
+def get_subscriptions(introspection_data):
+    """Extract all Subscription operations from GraphQL schema"""
+    try:
+        schema = introspection_data.get('data', {}).get('__schema', {})
+        subscription_type_info = schema.get('subscriptionType')
+
+        if not subscription_type_info:
+            print(f"{Fore.YELLOW}[*] No subscriptions found in the schema.{Style.RESET_ALL}")
+            return []
+
+        subscription_name = subscription_type_info.get('name')
+        types = schema.get('types', [])
+
+        for gql_type in types:
+            if gql_type.get('name') == subscription_name:
+                fields = gql_type.get('fields', [])
+                
+                subscription_list = [f['name'] for f in fields]
+                
+                if subscription_list:
+                    print(f"{Fore.BLUE}{Style.BRIGHT}\n[!] DISCOVERED {len(subscription_list)} SUBSCRIPTIONS:")
+                    for s in subscription_list:
+                        # Flag real-time data subscriptions
+                        if any(word in s.lower() for word in ['message', 'notification', 'update', 'event', 'stream']):
+                            print(f"  {Fore.CYAN}-> {s} (REAL-TIME DATA)")
+                        else:
+                            print(f"  {Fore.WHITE}-> {s}")
+                    return subscription_list
+        
+        return []
+
+    except Exception as e:
+        print(f"{Fore.RED}[-] Error parsing subscriptions: {e}{Style.RESET_ALL}")
+        return []
+
 
 def get_mutations(introspection_data):
     try:
@@ -150,6 +221,27 @@ def get_mutations(introspection_data):
         print(f"{Fore.RED}[-] Error parsing mutations: {e}{Style.RESET_ALL}")
         return []
 
+def analyze_schema(introspection_data):
+    """Comprehensive schema analysis - queries, mutations, and subscriptions"""
+    print(f"\n{Fore.CYAN}{'='*60}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{Style.BRIGHT}SCHEMA ANALYSIS{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'='*60}{Style.RESET_ALL}")
+    
+    queries = get_queries(introspection_data)
+    mutations = get_mutations(introspection_data)
+    subscriptions = get_subscriptions(introspection_data)
+    
+    # Summary
+    print(f"\n{Fore.WHITE}{Style.BRIGHT}SUMMARY:{Style.RESET_ALL}")
+    print(f"  {Fore.CYAN}Queries: {len(queries)}{Style.RESET_ALL}")
+    print(f"  {Fore.MAGENTA}Mutations: {len(mutations)}{Style.RESET_ALL}")
+    print(f"  {Fore.BLUE}Subscriptions: {len(subscriptions)}{Style.RESET_ALL}")
+    
+    return {
+        'queries': queries,
+        'mutations': mutations,
+        'subscriptions': subscriptions
+    }
 
 # Argument parser
 parser = argparse.ArgumentParser(description="GraphQL Introspection Detector with Authentication Support")
@@ -187,7 +279,6 @@ auth_handler = create_auth_handler(
 # Endpoint discovery
 # Endpoint discovery - only fuzz if no specific path is provided
 def has_graphql_path(url):
-    """Check if URL already contains a GraphQL endpoint path"""
     from urllib.parse import urlparse
     path = urlparse(url).path
     # Check if path is not just "/" or empty
@@ -220,8 +311,8 @@ if is_introspection_enabled(target_url, auth_handler):
     success, introspection_data = dump_introspection(target_url, auth_handler, output_file)
     
     if success and introspection_data:
-        print(f"\n{Fore.CYAN}Analyzing Mutations...{Style.RESET_ALL}")
-        get_mutations(introspection_data)
+        # Comprehensive schema analysis
+        schema_info = analyze_schema(introspection_data)
     else:
         print(f"{Fore.RED}[-] Failed to retrieve introspection data.{Style.RESET_ALL}")
 else:
