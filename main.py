@@ -185,12 +185,23 @@ auth_handler = create_auth_handler(
 )
 
 # Endpoint discovery
-if not target_url.endswith(tuple(f.COMMON_PATHS)):
+# Endpoint discovery - only fuzz if no specific path is provided
+def has_graphql_path(url):
+    """Check if URL already contains a GraphQL endpoint path"""
+    from urllib.parse import urlparse
+    path = urlparse(url).path
+    # Check if path is not just "/" or empty
+    return len(path) > 1 and path != "/"
+
+if not has_graphql_path(target_url):
+    print(f"{Fore.YELLOW}[*] No specific endpoint detected, starting fuzzing...{Style.RESET_ALL}")
     found_url = f.find_graphql_endpoint(target_url)
     if not found_url:
         print(f"{Fore.RED}[-] Could not find a GraphQL endpoint. Try providing the path manually.{Style.RESET_ALL}")
         sys.exit(1)
     target_url = found_url
+else:
+    print(f"{Fore.GREEN}[+] Using provided endpoint: {target_url}{Style.RESET_ALL}")
 
 # Validate authentication if provided
 if auth_handler.is_authenticated():
